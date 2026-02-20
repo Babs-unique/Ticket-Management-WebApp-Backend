@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const connectDB = require("./src/config/db");
 const userRoutes = require('./src/routes/user.routes');
+const ticketRoutes = require('./src/routes/ticket.routes');
 
 
 require('dotenv').config();
@@ -24,6 +25,7 @@ app.use(morgan('dev'));
 connectDB();
 
 app.use('/api/users', userRoutes);
+app.use('/api/tickets', ticketRoutes);
 
 
 const rateLimiter = rateLimit({
