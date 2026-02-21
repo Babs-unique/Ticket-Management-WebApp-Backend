@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const User = require('./user.models');
 
 
 const ticketSchema = new mongoose.Schema({
@@ -22,6 +23,15 @@ const ticketSchema = new mongoose.Schema({
         enum: ['easy', 'medium', 'hard'],
         default: 'medium'
     },
+    user: {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "User",
+        required : true
+    },
+    ticketId: {
+        type : String,
+        unique : true
+    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -34,3 +44,5 @@ const ticketSchema = new mongoose.Schema({
     timestamps: true,
     versionKey: false
 })
+
+module.exports = mongoose.model("Ticket", ticketSchema);
