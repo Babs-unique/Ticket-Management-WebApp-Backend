@@ -42,7 +42,10 @@ const getAllTicket = async (req , res) => {
         return res.status(401).json({ message: 'Unauthorized' });
     }
     try {
-        const allTickets = await Ticket.find({ user: userId });
+        const allTickets = await Ticket.find({ user: userId , isDeleted : { $ne : true }});
+        if(allTickets.length === 0){
+            return res.status(200).json({message:"No tickets found", tickets: []})
+        }
         return res.status(200).json({
             tickets: allTickets,
             total: allTickets.length,
@@ -57,23 +60,26 @@ const getAllTicket = async (req , res) => {
 const searchTicket = async (req, res) => {
     const {q} = req.query;
     const userId = req.user.id;
-    if(!q){
-        return res.status(400).json({message:"No search query provided"})
-    }
     if (!userId) {
         return res.status(401).json({ message: 'Unauthorized' });
+    }
+    if(!q){
+        return res.status(400).json({message:"No search query provided"})
     }
     try{
         const formattedQuery = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
         const configuredQuery = formattedQuery(q);
 
-
         const tickets = await Ticket.find({
             $or : [
                 {title : {$regex :configuredQuery , $options : "i"}},
                 {description : {$regex : configuredQuery , $options : "i" }}
-            ]
+            ],
+            user : userId
         })
+        if(tickets.length === 0){
+            return res.status(200).json({message:"No tickets found matching the search query", tickets: []})
+        }
         return res.status(200).json(tickets)
     }catch(error){
         console.error("Error in searching Tickets", error)
@@ -83,6 +89,10 @@ const searchTicket = async (req, res) => {
 
 const filterByStatus = async (req , res) => {
     const {status} = req.query;
+    const userId = req.user.id;
+    if(!userId) { 
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
 
     const filter = {};
 
@@ -90,7 +100,12 @@ const filterByStatus = async (req , res) => {
         filter.status = status;
     }
     try{
-        const tickets = await Tickets.find({filter})
+        const tickets = await Tickets.find({filter,
+            user : userId
+        })
+        if(tickets.length === 0){
+            return res.status(200).json({message:`No tickets found with status ${status}`, tickets: []})
+        }
         return res.status(200).json(tickets)
     }catch(error){
         console.error(`Error in fetching tickets with status ${status}`, error)
@@ -98,10 +113,55 @@ const filterByStatus = async (req , res) => {
     }
 }
 
+const updateTickets = async (req, res) => {
+    const {id} = req.params;
+    const userId = req.user.id
+    if(!userId){
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+    try{
+        const tickets = await Ticket.findOneAndUpdate({_id : id, user : userId},
+            {title, description, priority, status},
+            {new : true}
+        )
+        if(!tickets){
+            return res.status(404).json({message:"Ticket not found"})
+        }
+        return res.status(200).json({message : "Ticket updated successfully", tickets})
+    }catch(error){
+        console.error("Error in updating ticket", error);
+        return res.status(500).json({message:"Server Error"})
+    }
+}
+const deleteTickets = async (req ,res) => {
+    const {id} = req.params;
+    const userId = req.user.id;
+    if(!userId) {
+        return res.status(400).json({message: "Unauthorized"})
+    }
+    try{
+        const tickets = await Ticket.findOneAndUpdate({_id : id, user : userId},
+            {deletedAt : new Date(), isDeleted : true},
+            {new : true}
+        )
+        if(!tickets){
+            return res.status(404).json({message:"Ticket not found"})
+        }
+        return res.status(200).json({message:"Ticket deleted successfully", ticket: tickets})
+
+    }catch(error){
+        console.error("Error in deleting ticket", error);
+        return res.status(500).json({message:"Server Error"})
+    }
+    
+}
+
 
 module.exports = {
     createTicket,
     getAllTicket,
     searchTicket,
-    filterByStatus
+    filterByStatus,
+    updateTickets,
+    deleteTickets
 }
