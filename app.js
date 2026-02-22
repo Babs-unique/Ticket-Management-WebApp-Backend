@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const connectDB = require("./src/config/db");
 const userRoutes = require('./src/routes/user.routes');
 const ticketRoutes = require('./src/routes/ticket.routes');
+const settingRoutes = require('./src/routes/setting.routes')
 
 
 require('dotenv').config();
@@ -26,6 +27,7 @@ connectDB();
 
 app.use('/api/users', userRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api/settings', settingRoutes);
 
 
 const rateLimiter = rateLimit({
