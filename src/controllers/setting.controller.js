@@ -1,5 +1,6 @@
 const cloudinary = require('cloudinary').v2;
 const User = require('../models/user.models');
+const bcrypt = require('bcryptjs')
 
 
 const uploadImage = async (req, res) => {
@@ -69,7 +70,8 @@ const editPassword = async (req, res) => {
         if(password !== confirmPassword){
             return res.status(400).json({message:"Password doesn't match"})
         }
-        user.password = password;
+        const hashedPassword = await bcrypt.hash(password , 10)
+        user.password = hashedPassword;
         await user.save();
 
         return res.status(200).json({message:"Password updated successfully"})
