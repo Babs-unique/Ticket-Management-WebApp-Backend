@@ -39,7 +39,7 @@ const editProfile = async (req, res) => {
         return res.status(401).json({ message: 'Unauthorized' });
     }
     try{
-        const user = await User.findByIdAndUpdate(userId);
+        const user = await User.findById(userId);
         if(!user){
             return res.status(401).json({message:"Unauthorized"})
         }
