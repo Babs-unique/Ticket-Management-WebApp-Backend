@@ -8,15 +8,19 @@ const User = userSchema;
 
 
 
-const registerUser = async (req, res) => {
-    const { name, email, password} = req.body;
+const registerUser = async (req, res, next) => {
+    const { name, email, password } = req.body;
     if (!name || !email || !password) {
-        return res.status(400).json({ message: 'All fields are required' });
+        const err = new Error('All fields are required');
+        err.status = 400;
+        return next(err);
     }
-    try{
+    try {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+            const err = new Error('User already exists');
+            err.status = 400;
+            return next(err);
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({
@@ -26,35 +30,41 @@ const registerUser = async (req, res) => {
         })
         await newUser.save();
         res.status(201).json({ message: 'User created successfully' });
-    }catch(error){
+    } catch (error) {
         console.error("Registration error:", error);
-        return res.status(500).json({ message: 'Server error' });
+        next(error);
     }
 }
 
 
 
-const loginUser = async ( req , res) => {
-    const {email , password} = req.body;
-    if(!email || !password) {
-        return res.status(400).json({ message: 'All fields are required' });
+const loginUser = async (req, res, next) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        const err = new Error('All fields are required');
+        err.status = 400;
+        return next(err);
     }
-    try{
-        const existingUser = await User.findOne({email});
-        if(!existingUser){
-            return res.status(400).json({message: "User not found"})
+    try {
+        const existingUser = await User.findOne({ email });
+        if (!existingUser) {
+            const err = new Error('User not found');
+            err.status = 400;
+            return next(err);
         }
 
-        const isPasswordValid = bcrypt.compare(password, existingUser.password);
-        if(!isPasswordValid){
-            return res.status(400).json({message:"Invalid Credentials"})
+        const isPasswordValid = await bcrypt.compare(password, existingUser.password);
+        if (!isPasswordValid) {
+            const err = new Error('Invalid Credentials');
+            err.status = 400;
+            return next(err);
         }
 
-        const token = jwt.sign({id: existingUser._id} , process.env.JWT_SECRET , {expiresIn  : '1h'})
-        return res.status(200).json({Message : 'Login successful' , token})
-    }catch(error){
+        const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' })
+        return res.status(200).json({ Message: 'Login successful', token })
+    } catch (error) {
         console.error("Login error:", error);
-        return res.status(500).json({ message: 'Server error' });
+        next(error);
     }
 }
 
