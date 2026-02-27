@@ -1,4 +1,4 @@
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('../utils/cloudinary');
 const User = require('../models/user.models');
 const bcrypt = require('bcryptjs')
 
