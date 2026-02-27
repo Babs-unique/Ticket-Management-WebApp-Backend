@@ -43,6 +43,14 @@ The server will run at `http://localhost:3000`
 
 ---
 
+## 📖 API Documentation
+
+**Full API Documentation**: [Postman Documentation](https://documenter.getpostman.com/view/50333789/2sBXcHhdsq)
+
+View detailed endpoint descriptions, request/response examples, and testing guides in our Postman documentation.
+
+---
+
 ## API Endpoints
 
 ### User Endpoints
