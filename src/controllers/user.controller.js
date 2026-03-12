@@ -67,8 +67,26 @@ const loginUser = async (req, res, next) => {
         next(error);
     }
 }
+const getUserProfile = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) {
+            const err = new Error('User not found');
+        }
+        res.status(200).json(user);
+    }catch(err){
+        console.error("Get user profile error:", err);
+        next(err);
+    }
+}
+const logout  = (req, res) => {
+    return res.status(200).json({ message: 'Logout successful' });
+}
 
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    getUserProfile,
+    logout
+}
 }
