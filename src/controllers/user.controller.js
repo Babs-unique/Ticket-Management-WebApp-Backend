@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userSchema = require('../models/user.models');
+const generateToken = require('../utils/genratedToken');
 
 
 
@@ -60,11 +61,53 @@ const loginUser = async (req, res, next) => {
             return next(err);
         }
 
-        const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' })
-        return res.status(200).json({ Message: 'Login successful', token })
+        /* const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' }) */
+        const { accessToken, refreshToken } = generateToken(existingUser._id);
+
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 15 * 60 * 1000
+        })
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({ message: 'Login successful'})
     } catch (error) {
         console.error("Login error:", error);
         next(error);
+    }
+}
+
+const refresh = (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+    try {
+        jwt.verify(refreshToken, process.env.JWT_SECRET,
+            (error, decoded) => {
+                if (error) {
+                    return res.status(401).json({ message: 'Unauthorized' });
+                }
+                const { accessToken } = generateToken(decoded.id);
+                res.cookie('accessToken', accessToken, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "strict",
+                    maxAge: 15 * 60 * 1000
+                });
+                return res.status(200).json({ message: 'Token refreshed successfully' });
+            }
+        );
+    } catch (error) {
+        console.error("Refresh token error:", error);
+        return res.status(401).json({ message: 'Unauthorized' });
     }
 }
 const getUserProfile = async (req, res, next) => {
@@ -72,6 +115,8 @@ const getUserProfile = async (req, res, next) => {
         const user = await User.findById(req.user.id).select('-password');
         if (!user) {
             const err = new Error('User not found');
+            err.status = 404;
+            return next(err);
         }
         res.status(200).json(user);
     }catch(err){
@@ -80,12 +125,15 @@ const getUserProfile = async (req, res, next) => {
     }
 }
 const logout  = (req, res) => {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
     return res.status(200).json({ message: 'Logout successful' });
 }
 
 module.exports = {
     registerUser,
     loginUser,
+    refresh,
     getUserProfile,
     logout
 }

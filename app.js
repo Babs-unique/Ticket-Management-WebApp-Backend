@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const connectDB = require("./src/config/db");
 const userRoutes = require('./src/routes/user.routes');
 const ticketRoutes = require('./src/routes/ticket.routes');
@@ -18,6 +19,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
+app.use(cookieParser());
 
 connectDB();
 
