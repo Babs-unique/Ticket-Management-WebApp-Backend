@@ -66,14 +66,14 @@ const loginUser = async (req, res, next) => {
 
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: false, //Change back to true in production after hosting frontend 
-            sameSite: "none", //Allow requests from different origin
+            secure: true,
+            sameSite: "none",
             maxAge: 15 * 60 * 1000
         })
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: false, //Change back to true in production after hosting frontend 
-            sameSite: "none", //Allow requests from different origin
+            secure: true,
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
@@ -105,8 +105,8 @@ const refresh = (req, res) => {
                 const { accessToken } = generateToken(decoded.id);
                 res.cookie('accessToken', accessToken, {
                     httpOnly: true,
-                    secure: false, //Change back to true in production after hosting frontend 
-                    sameSite: "none", //Allow requests from different origin
+                    secure: true,
+                    sameSite: "none",
                     maxAge: 15 * 60 * 1000
                 });
                 return res.status(200).json({ message: 'Token refreshed successfully' });
