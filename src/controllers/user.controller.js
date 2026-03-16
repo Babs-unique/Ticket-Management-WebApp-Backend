@@ -99,14 +99,15 @@ const refresh = (req, res) => {
     try {
         jwt.verify(refreshToken, process.env.JWT_SECRET,
             (error, decoded) => {
+                console.log("REFRESH TOKEN DECODED:", decoded);
                 if (error) {
                     return res.status(401).json({ message: 'Unauthorized' });
                 }
                 const { accessToken } = generateToken(decoded.id);
                 res.cookie('accessToken', accessToken, {
                     httpOnly: true,
-                    secure: true,
-                    sameSite: "none",
+                    secure: false, //Remember to set this to true in production
+                    sameSite: "lax",
                     maxAge: 15 * 60 * 1000
                 });
                 return res.status(200).json({ message: 'Token refreshed successfully' });
