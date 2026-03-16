@@ -125,7 +125,10 @@ const getUserProfile = async (req, res, next) => {
             err.status = 404;
             return next(err);
         }
-        res.status(200).json(user);
+        res.status(200).json({
+            success: true,
+            user
+        });
     }catch(err){
         console.error("Get user profile error:", err);
         next(err);
