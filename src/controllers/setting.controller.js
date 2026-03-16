@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs')
 
 
 const uploadImage = async (req, res, next) => {
-    const userId = req.user.id;
+    const userId = req.user?.id || req.user?.userId;
     if (!userId) {
         const err = new Error('Unauthorized');
         err.status = 401;
@@ -41,7 +41,7 @@ const uploadImage = async (req, res, next) => {
 
 const editProfile = async (req, res, next) => {
     const { name, email } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.id  || req.user?.userId;
     if (!userId) {
         const err = new Error('Unauthorized');
         err.status = 401;
@@ -68,7 +68,7 @@ const editProfile = async (req, res, next) => {
 
 const editPassword = async (req, res, next) => {
     const { password, confirmPassword } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.id || req.user?.userId;
     if (!userId) {
         const err = new Error('Unauthorized');
         err.status = 401;

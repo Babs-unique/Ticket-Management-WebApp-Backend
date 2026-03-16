@@ -10,7 +10,7 @@ const createTicket = async (req, res, next) => {
         err.status = 400;
         return next(err);
     }
-    const userId = req.user.id;
+    const userId = req.user.id || req.user?.userId;
     if (!userId) {
         const err = new Error('Unauthorized');
         err.status = 401;
@@ -43,7 +43,7 @@ const createTicket = async (req, res, next) => {
 }
 
 const getAllTicket = async (req, res, next) => {
-    const userId = req.user.id;
+    const userId = req.user.id || req.user?.userId;
     if (!userId) {
         const err = new Error('Unauthorized');
         err.status = 401;
@@ -67,7 +67,7 @@ const getAllTicket = async (req, res, next) => {
 }
 const searchTicket = async (req, res, next) => {
     const { q } = req.query;
-    const userId = req.user.id;
+    const userId = req.user.id || req.user?.userId;
     if (!userId) {
         const err = new Error('Unauthorized');
         err.status = 401;
@@ -104,7 +104,7 @@ const searchTicket = async (req, res, next) => {
 
 const filterByStatus = async (req, res, next) => {
     const { status } = req.query;
-    const userId = req.user.id;
+    const userId = req.user.id || req.user?.userId;
     if (!userId) {
         const err = new Error('Unauthorized');
         err.status = 401;
@@ -126,7 +126,7 @@ const filterByStatus = async (req, res, next) => {
 const updateTickets = async (req, res, next) => {
     const { id } = req.params;
     const { title, description, priority, status } = req.body;
-    const userId = req.user.id
+    const userId = req.user.id || req.user?.userId
     if (!userId) {
         const err = new Error('Unauthorized');
         err.status = 401;
@@ -156,7 +156,7 @@ const updateTickets = async (req, res, next) => {
 }
 const deleteTickets = async (req, res, next) => {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = req.user.id || req.user?.userId;
     if (!userId) {
         const err = new Error('Unauthorized');
         err.status = 401;

@@ -99,7 +99,6 @@ const refresh = (req, res) => {
     try {
         jwt.verify(refreshToken, process.env.JWT_SECRET,
             (error, decoded) => {
-                console.log("REFRESH TOKEN DECODED:", decoded);
                 if (error) {
                     return res.status(401).json({ message: 'Unauthorized' });
                 }
@@ -122,7 +121,6 @@ const getUserProfile = async (req, res, next) => {
     try {
         const userId = req.user?.id || req.user?.userId;
         if (!userId) {
-            console.log("User ID from token:", req.user);
             return res.status(401).json({ message: "Unauthorized" });
             
         }
