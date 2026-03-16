@@ -103,7 +103,7 @@ const refresh = (req, res) => {
                 if (error) {
                     return res.status(401).json({ message: 'Unauthorized' });
                 }
-                const { accessToken } = generateToken(decoded.id);
+                const { accessToken } = generateToken(decoded.userId);
                 res.cookie('accessToken', accessToken, {
                     httpOnly: true,
                     secure: false, //Remember to set this to true in production
