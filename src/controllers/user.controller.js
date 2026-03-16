@@ -61,19 +61,19 @@ const loginUser = async (req, res, next) => {
             return next(err);
         }
 
-        /* const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' }) */
+       /*  const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' }) */
         const { accessToken, refreshToken } = generateToken(existingUser._id);
 
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: true,
-            sameSite: "none",
+            secure: false, //Remember to set this to true in production
+            sameSite: "lax",
             maxAge: 15 * 60 * 1000
         })
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: true,
-            sameSite: "none",
+            secure: false, //Remember to set this to true in production
+            sameSite: "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
@@ -119,6 +119,11 @@ const refresh = (req, res) => {
 }
 const getUserProfile = async (req, res, next) => {
     try {
+        if (!req.user?.id) {
+            console.log("User ID from token:", req.user);
+            return res.status(401).json({ message: "Unauthorized" });
+            
+        }
         const user = await User.findById(req.user.id).select('-password');
         if (!user) {
             const err = new Error('User not found');
