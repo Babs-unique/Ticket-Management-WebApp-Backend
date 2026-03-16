@@ -120,12 +120,13 @@ const refresh = (req, res) => {
 }
 const getUserProfile = async (req, res, next) => {
     try {
-        if (!req.user?.id) {
+        const userId = req.user?.id || req.user?.userId;
+        if (!userId) {
             console.log("User ID from token:", req.user);
             return res.status(401).json({ message: "Unauthorized" });
             
         }
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findById(userId).select('-password');
         if (!user) {
             const err = new Error('User not found');
             err.status = 404;
