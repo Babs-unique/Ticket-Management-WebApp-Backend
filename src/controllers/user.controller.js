@@ -103,7 +103,7 @@ const refresh = (req, res) => {
                 if (error) {
                     return res.status(401).json({ message: 'Unauthorized' });
                 }
-                const { accessToken } = generateToken(decoded.id);
+                const { accessToken } = generateToken(decoded.userId || decoded.id);
                 res.cookie('accessToken', accessToken, {
                     httpOnly: true,
                     secure: false, //Remember to set this to true in production
@@ -120,12 +120,12 @@ const refresh = (req, res) => {
 }
 const getUserProfile = async (req, res, next) => {
     try {
-        if (!req.user?.id) {
+        if (!req.user?.userId) {
             console.log("User ID from token:", req.user);
             return res.status(401).json({ message: "Unauthorized" });
             
         }
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findById(req.user.userId).select('-password');
         if (!user) {
             const err = new Error('User not found');
             err.status = 404;
