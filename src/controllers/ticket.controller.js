@@ -43,6 +43,10 @@ const createTicket = async (req, res, next) => {
 }
 
 const getAllTicket = async (req, res, next) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const startIndex = (page - 1) * limit;
     const userId = req.user.id || req.user?.userId;
     if (!userId) {
         const err = new Error('Unauthorized');
@@ -50,13 +54,16 @@ const getAllTicket = async (req, res, next) => {
         return next(err);
     }
     try {
-        const allTickets = await Ticket.find({ user: userId, isDeleted: { $ne: true } });
+        const allTickets = await Ticket.find({ user: userId, isDeleted: { $ne: true } }).skip(startIndex).limit(limit);
         if (allTickets.length === 0) {
             return res.status(200).json({ message: "No tickets found", tickets: [] })
         }
         return res.status(200).json({
             tickets: allTickets,
             total: allTickets.length,
+            page: page,
+            limit: limit,
+            pages: Math.ceil(allTickets.length / limit),
             openTickets: allTickets.filter(ticket => ticket.status === 'open').length,
             closedTickets: allTickets.filter(ticket => ticket.status === 'closed').length
         })
@@ -123,8 +130,14 @@ const filterByStatus = async (req, res, next) => {
     }
 }
 
-const filter = async ( req , res ) =>{
+const filter = async ( req , res , next ) =>{
     const {q , status} = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+
+    const startIndex = (page - 1) * limit;
+
     const userId = req.user.id || req.user.userId
     if(!userId) {
         const err = new Error('Unauthorized');
@@ -146,13 +159,16 @@ const filter = async ( req , res ) =>{
         ];
     }
     try{
-        const tickets = await Ticket.find(filter);
+        const tickets = await Ticket.find(filter).skip(startIndex).limit(limit);
         if(tickets.length === 0) {
             return res.status(200).json({ message: "No tickets found matching the criteria", tickets: [] })
         }
         return res.status(200).json({
             tickets: tickets,
-            total: tickets.length
+            total: tickets.length,
+            page: page,
+            limit: limit,
+            pages : Math.ceil(tickets.length / limit)
         })
 
     }catch(error){

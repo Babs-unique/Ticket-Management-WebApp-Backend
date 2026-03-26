@@ -43,6 +43,7 @@ app.get('/', (req, res) => {
     res.send('Welcome to the Ticket Management API');
 });
 
+
 // Error handling middleware
 app.use(errorHandler);
 
