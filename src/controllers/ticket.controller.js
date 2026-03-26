@@ -123,6 +123,45 @@ const filterByStatus = async (req, res, next) => {
     }
 }
 
+const filter = async ( req , res ) =>{
+    const {q , status} = req.query;
+    const userId = req.user.id || req.user.userId
+    if(!userId) {
+        const err = new Error('Unauthorized');
+        err.status = 401;
+        return next(err);
+    }
+    let filter = {
+        user: userId
+    };
+    if(status && status !== "all"){
+        filter.status = status;
+    }
+    if(q) {
+        const formattedQuery = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        const configuredQuery = formattedQuery(q);
+        filter.$or = [
+            { title: { $regex: configuredQuery, $options: "i" } },
+            { description: { $regex: configuredQuery, $options: "i" } }
+        ];
+    }
+    try{
+        const tickets = await Ticket.find(filter);
+        if(tickets.length === 0) {
+            return res.status(200).json({ message: "No tickets found matching the criteria", tickets: [] })
+        }
+        return res.status(200).json({
+            tickets: tickets,
+            total: tickets.length
+        })
+
+    }catch(error){
+        console.error("Error in filtering tickets", error);
+        next(error);
+    }
+}
+
+
 const updateTickets = async (req, res, next) => {
     const { id } = req.params;
     const { title, description, priority, status } = req.body;
@@ -186,6 +225,7 @@ module.exports = {
     getAllTicket,
     searchTicket,
     filterByStatus,
+    filter,
     updateTickets,
     deleteTickets
 }
