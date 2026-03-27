@@ -67,7 +67,7 @@ const editProfile = async (req, res, next) => {
 
 
 const editPassword = async (req, res, next) => {
-    const { password, confirmPassword } = req.body;
+    const { currentPassword , newPassword, confirmPassword } = req.body;
     const userId = req.user.id || req.user?.userId;
     if (!userId) {
         const err = new Error('Unauthorized');
@@ -81,6 +81,13 @@ const editPassword = async (req, res, next) => {
             err.status = 401;
             return next(err);
         }
+        if(!currentPassword || !newPassword || !confirmPassword){
+            const err = new Error('All fields are required');
+        }
+        if (!await bcrypt.compare(currentPassword, user.password)) {
+            const err = new Error('Current password is incorrect');
+        }
+        
         if (password !== confirmPassword) {
             const err = new Error("Password doesn't match");
             err.status = 400;
