@@ -58,12 +58,13 @@ const getAllTicket = async (req, res, next) => {
         if (allTickets.length === 0) {
             return res.status(200).json({ message: "No tickets found", tickets: [] })
         }
+        const totalTickets = await Ticket.countDocuments({ user: userId, isDeleted: { $ne: true } });
         return res.status(200).json({
             tickets: allTickets,
-            total: allTickets.length,
+            total: totalTickets,
             page: page,
             limit: limit,
-            pages: Math.ceil(allTickets.length / limit),
+            pages: Math.ceil(totalTickets / limit),
             openTickets: allTickets.filter(ticket => ticket.status === 'open').length,
             closedTickets: allTickets.filter(ticket => ticket.status === 'closed').length
         })
@@ -163,12 +164,13 @@ const filter = async ( req , res , next ) =>{
         if(tickets.length === 0) {
             return res.status(200).json({ message: "No tickets found matching the criteria", tickets: [] })
         }
+        const totalTickets = await Ticket.countDocuments({...filter , isDeleted: { $ne: true }});
         return res.status(200).json({
             tickets: tickets,
-            total: tickets.length,
+            total: totalTickets,
             page: page,
             limit: limit,
-            pages : Math.ceil(tickets.length / limit)
+            pages : Math.ceil(totalTickets / limit)
         })
 
     }catch(error){
