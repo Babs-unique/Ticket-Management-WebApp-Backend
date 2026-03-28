@@ -159,7 +159,7 @@ const filter = async ( req , res , next ) =>{
         ];
     }
     try{
-        const tickets = await Ticket.find(filter).skip(startIndex).limit(limit);
+        const tickets = await Ticket.find({filter , isDeleted: { $ne: true }}).skip(startIndex).limit(limit);
         if(tickets.length === 0) {
             return res.status(200).json({ message: "No tickets found matching the criteria", tickets: [] })
         }
